@@ -339,7 +339,7 @@ h1 span {
   grid-template-columns: repeat(4, 1fr);
   grid-template-areas:
     '. . . pause'
-    'left right down turn';
+    'left down turn right';
   gap: 8px 10px;
   justify-content: center;
   margin-top: 10px;
