@@ -1,4 +1,4 @@
-// Oncall — core game rules. Pure logic: no DOM, no audio, no timers of its own.
+// On-call — core game rules. Pure logic: no DOM, no audio, no timers of its own.
 // One Game instance is one player's server. Drive it with tick(dt, softDrop).
 
 export const W = 8;

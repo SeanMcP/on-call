@@ -22,6 +22,10 @@ body {
 }
 
 body {
+  /* no double-tap zoom, no pull-to-refresh, no grey flash on tap */
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
   background: var(--bg);
   color: var(--ink);
   font: 14px/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
@@ -35,7 +39,9 @@ main {
   min-height: 100%;
   display: grid;
   place-items: center;
-  padding: 16px;
+  /* keep clear of notches and the home bar */
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
 }
 
 kbd {
@@ -229,8 +235,12 @@ h1 span {
 /* ---- game screen ---- */
 
 #arena {
-  position: relative;
   width: 100%;
+  --reserve: 90px; /* vertical space kept free around the servers */
+}
+
+.stage {
+  position: relative;
 }
 
 #panels {
@@ -246,7 +256,9 @@ h1 span {
 .panel canvas {
   display: block;
   /* as tall as the window allows, or as wide as an equal share of it allows */
-  height: min(calc(100vh - 90px), calc((100vw - 32px - (var(--n) - 1) * 16px) / var(--n) * 160 / 104));
+  height: min(calc(100vh - var(--reserve)), calc((100vw - 38px - (var(--n) - 1) * 16px) / var(--n) * 160 / 104));
+  /* dvh tracks the space left by a phone browser's toolbars */
+  height: min(calc(100dvh - var(--reserve)), calc((100vw - 38px - (var(--n) - 1) * 16px) / var(--n) * 160 / 104));
   aspect-ratio: 104 / 160;
   image-rendering: pixelated;
   border: var(--px) solid var(--pc);
@@ -287,6 +299,118 @@ h1 span {
 
 #overlay button {
   padding: 5px 12px;
+}
+
+/* ---- touch screens and narrow windows ---- */
+
+/* One server only: hide the other players and the in/out switch. */
+.narrow .slot:not([data-slot='0']),
+.narrow .slot [data-row='on'] {
+  display: none;
+}
+
+/* Nothing here mentions keys when the controls are on screen. */
+.touch .keys,
+.touch .keyboard-only,
+.touch kbd {
+  display: none;
+}
+
+.touch .row button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.touch #start {
+  padding: 14px 32px;
+}
+
+.touch #overlay button {
+  padding: 12px 18px;
+}
+
+.pad-on #arena {
+  --reserve: 220px;
+}
+
+#pad {
+  --key: 72px;
+  display: grid;
+  grid-template-columns: repeat(3, var(--key));
+  grid-template-areas:
+    '. turn pause'
+    'left down right';
+  gap: 10px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+#pad button {
+  height: 64px;
+  font-size: 26px;
+  line-height: 1;
+  padding: 0;
+  border: var(--px) solid #4a5380;
+  /* the game handles these touches itself */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#pad button.held {
+  background: var(--teal);
+  color: #06231f;
+  transform: translateY(var(--px));
+  box-shadow: none;
+}
+
+#pad [data-action='turn'] { grid-area: turn; }
+#pad [data-action='left'] { grid-area: left; }
+#pad [data-action='down'] { grid-area: down; }
+#pad [data-action='right'] { grid-area: right; }
+
+#pad #pause {
+  grid-area: pause;
+  justify-self: end;
+  align-self: start;
+  width: 44px;
+  height: 44px;
+  font-size: 13px;
+  color: var(--dim);
+  border-color: var(--edge);
+}
+
+/* A phone on its side: buttons move to the bottom corners, under each thumb. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .pad-on #arena {
+    --reserve: 38px;
+  }
+
+  #pad {
+    position: fixed;
+    left: max(16px, env(safe-area-inset-left));
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    margin: 0;
+    grid-template-columns: var(--key) var(--key) 1fr var(--key);
+    grid-template-areas:
+      'pause . . turn'
+      'left right . down';
+    pointer-events: none;
+  }
+
+  #pad button {
+    pointer-events: auto;
+  }
+
+  #pad #pause {
+    justify-self: start;
+  }
+
+  #overlay {
+    z-index: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

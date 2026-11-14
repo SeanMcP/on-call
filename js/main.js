@@ -1,4 +1,4 @@
-// Oncall — screens, settings, input and the frame loop.
+// On-call — screens, settings, input and the frame loop.
 
 import { Game, SPEEDS, MAX_LEVEL } from './engine.js';
 import { KEYMAPS, buildLookup } from './input.js';
@@ -6,7 +6,7 @@ import { createRenderer, drawAvatar, PLAYER_COLORS } from './render.js';
 import { audio, TRACKS } from './audio.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
-const STORE_KEY = 'oncall-settings-v1';
+const STORE_KEY = 'on-call-settings-v1';
 const DAS_DELAY = 170; // ms a move key is held before it repeats
 const DAS_REPEAT = 50;
 const ROWS = ['on', 'level', 'speed'];
@@ -17,6 +17,7 @@ const slotsEl = $('#slots');
 const arenaEl = $('#arena');
 const panelsEl = $('#panels');
 const overlayEl = $('#overlay');
+const padEl = $('#pad');
 const musicOut = $('#music output');
 
 // --- settings ---------------------------------------------------------------
@@ -54,6 +55,19 @@ function saveSettings() {
 const settings = loadSettings();
 audio.track = settings.music;
 
+// --- screen size and touch ------------------------------------------------------
+
+// Narrow screens (phones) only have room for one server. Touch screens, and narrow
+// windows, get on-screen buttons. The keyboard keeps working in every case.
+const narrowQuery = window.matchMedia('(max-width: 700px)');
+const coarseQuery = window.matchMedia('(pointer: coarse)');
+const isNarrow = () => narrowQuery.matches;
+const wantsPad = () => narrowQuery.matches || coarseQuery.matches;
+
+/** Whether a player slot takes part. On a narrow screen that is player 1 alone, whatever is saved. */
+const isOn = (i) => (isNarrow() ? i === 0 : settings.players[i].on);
+const activeSlots = () => [0, 1, 2, 3].filter(isOn);
+
 // --- settings screen ----------------------------------------------------------
 
 const focusRow = [0, 0, 0, 0]; // which row each player's keys are on
@@ -85,8 +99,8 @@ function buildMenu() {
 function refreshMenu() {
   settings.players.forEach((p, i) => {
     const slot = $(`.slot[data-slot="${i}"]`, slotsEl);
-    slot.classList.toggle('off', !p.on);
-    const values = { on: p.on ? 'IN' : 'OUT', level: `LV ${p.level} · ${p.level * 4}`, speed: SPEEDS[p.speed].label };
+    slot.classList.toggle('off', !isOn(i));
+    const values = { on: isOn(i) ? 'IN' : 'OUT', level: `LV ${p.level} · ${p.level * 4}`, speed: SPEEDS[p.speed].label };
     ROWS.forEach((row, r) => {
       const el = $(`[data-row="${row}"]`, slot);
       $('output', el).textContent = values[row];
@@ -94,12 +108,12 @@ function refreshMenu() {
     });
   });
   musicOut.textContent = TRACKS.find((t) => t.id === settings.music).label;
-  $('#start').disabled = !settings.players.some((p) => p.on);
+  $('#start').disabled = activeSlots().length === 0;
 }
 
 function adjust(i, row, dir) {
   const p = settings.players[i];
-  if (row === 'on') p.on = !p.on;
+  if (row === 'on' && !isNarrow()) p.on = !p.on;
   if (row === 'level') p.level = Math.max(1, Math.min(MAX_LEVEL, p.level + dir));
   if (row === 'speed') p.speed = Math.max(0, Math.min(SPEEDS.length - 1, p.speed + dir));
   audio.sfx('move');
@@ -156,7 +170,7 @@ let keyLookup = new Map();
 let wins = [0, 0, 0, 0];
 
 function startMatch() {
-  const slots = settings.players.map((p, i) => (p.on ? i : -1)).filter((i) => i >= 0);
+  const slots = activeSlots();
   if (slots.length === 0) return;
   wins = [0, 0, 0, 0];
   keyLookup = buildLookup(slots);
@@ -175,6 +189,7 @@ function startMatch() {
   menuEl.hidden = true;
   arenaEl.hidden = false;
   startRound();
+  updateLayout();
 }
 
 function startRound() {
@@ -255,6 +270,7 @@ function showOverlay(title, detail, actions) {
 }
 
 function setPaused(paused) {
+  if (!paused && tooNarrow()) return;
   mode = paused ? 'paused' : 'play';
   audio.setPaused(paused);
   if (paused) showOverlay('PAUSED', 'Coffee break.', [['Resume', 'Esc', () => setPaused(false)], ['Settings', 'Backspace', toMenu]]);
@@ -268,29 +284,27 @@ function toMenu() {
   overlayEl.hidden = true;
   arenaEl.hidden = true;
   menuEl.hidden = false;
-  refreshMenu();
+  players = [];
+  updateLayout();
 }
 
 // --- input --------------------------------------------------------------------
 
-function playKey(e, down) {
-  const hit = keyLookup.get(e.code);
-  if (!hit) return;
-  e.preventDefault();
-  if (mode !== 'play') return;
-  const p = players.find((pl) => pl.slot === hit.player);
+/** Apply one control to one player. Releases always go through, so nothing sticks across a pause. */
+function act(p, action, down) {
+  if (down && mode !== 'play') return;
   const { game, held, das } = p;
-  switch (hit.action) {
+  switch (action) {
     case 'left':
     case 'right': {
-      const dir = hit.action === 'left' ? -1 : 1;
-      held[hit.action] = down;
+      const dir = action === 'left' ? -1 : 1;
+      held[action] = down;
       if (down) {
         game.move(dir);
         das.dir = dir;
         das.t = -DAS_DELAY;
       } else if (das.dir === dir) {
-        // fall back to the opposite key if it is still held
+        // fall back to the opposite control if it is still held
         das.dir = held.left ? -1 : held.right ? 1 : 0;
         das.t = -DAS_DELAY;
       }
@@ -304,6 +318,58 @@ function playKey(e, down) {
       break;
   }
 }
+
+function playKey(e, down) {
+  const hit = keyLookup.get(e.code);
+  if (!hit) return;
+  e.preventDefault();
+  const p = players.find((pl) => pl.slot === hit.player);
+  if (p?.game) act(p, hit.action, down);
+}
+
+// On-screen buttons (solo games only). Pointer events cover touch, pen and mouse,
+// and each finger is tracked separately so you can hold "down" while tapping "left".
+function padPress(e, down) {
+  const btn = e.target.closest?.('button[data-action]');
+  if (!btn || btn.classList.contains('held') === down) return;
+  e.preventDefault();
+  btn.classList.toggle('held', down);
+  if (down) {
+    btn.setPointerCapture?.(e.pointerId);
+    audio.unlock();
+  }
+  if (players.length === 1 && players[0].game) act(players[0], btn.dataset.action, down);
+}
+padEl.addEventListener('pointerdown', (e) => padPress(e, true));
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  padEl.addEventListener(type, (e) => padPress(e, false));
+}
+padEl.addEventListener('contextmenu', (e) => e.preventDefault()); // no long-press menu
+$('#pause').addEventListener('click', () => {
+  if (mode === 'play') setPaused(true);
+});
+
+/** A multi-player match cannot be shown on a narrow screen. */
+const tooNarrow = () => players.length > 1 && isNarrow();
+
+/** Re-apply everything that depends on screen width or touch. Runs at start and whenever they change. */
+function updateLayout() {
+  document.body.classList.toggle('narrow', isNarrow());
+  document.body.classList.toggle('touch', wantsPad());
+  const pad = wantsPad() && players.length === 1 && mode !== 'menu';
+  padEl.hidden = !pad;
+  document.body.classList.toggle('pad-on', pad);
+  if (mode === 'menu') return refreshMenu();
+  if (tooNarrow() && mode !== 'over') {
+    mode = 'paused';
+    audio.setPaused(true);
+    showOverlay('TOO NARROW', 'Make the window wider to carry on.', [['Settings', 'Backspace', toMenu]]);
+  } else if (mode === 'paused') {
+    setPaused(true); // back to the ordinary pause screen
+  }
+}
+narrowQuery.addEventListener('change', updateLayout);
+coarseQuery.addEventListener('change', updateLayout);
 
 window.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -370,7 +436,7 @@ function frame(now) {
 
   if (mode !== 'paused') clock += dt;
   if (mode === 'menu') {
-    slotsEl.querySelectorAll('.avatar').forEach((c, i) => drawAvatar(c, i, clock, settings.players[i].on));
+    slotsEl.querySelectorAll('.avatar').forEach((c, i) => drawAvatar(c, i, clock, isOn(i)));
   } else {
     const multi = players.length > 1;
     for (const p of players) p.draw(p.game, clock, { wins: multi ? wins[p.slot] : 0 });
@@ -379,6 +445,7 @@ function frame(now) {
 }
 
 buildMenu();
+updateLayout();
 
 // Deep link: ?autostart=2 jumps straight into a two-player match.
 const auto = Number(new URLSearchParams(location.search).get('autostart'));

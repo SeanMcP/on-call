@@ -1,4 +1,4 @@
-// Original pixel art for Oncall, as plain text. Each character is one pixel;
+// Original pixel art for On-call, as plain text. Each character is one pixel;
 // '.' is transparent and the other letters index into a palette (see render.js).
 
 // The three bug species, two wriggle frames each. 8×8.
@@ -21,7 +21,7 @@ export const BUGS = [
   ],
 ];
 
-// The oncall engineer. 16×16.
+// The on-call engineer. 16×16.
 // h = hair, s = skin, k = glasses/shoes, e = headphones, c = hoodie (player colour),
 // C = hoodie shade (drawstrings from the collar, front pocket), p = jeans, m = mouth.
 export const ENGINEER = {

@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Oncall</title>
-    <meta name="description" content="You are the oncall engineer and the pager just went off. A falling-block puzzle game for one to four players on one keyboard.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>On-call</title>
+    <meta name="description" content="You are the on-call engineer and the pager just went off. A falling-block puzzle game for one to four players on one keyboard.">
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="css/style.css">
     <script type="module" src="js/main.js"></script>
@@ -13,7 +13,7 @@
     <main>
       <section id="menu">
         <header>
-          <h1>ON<span>CALL</span></h1>
+          <h1>ON-<span>CALL</span></h1>
           <p class="tagline">It's after hours. The pager just went off.</p>
         </header>
 
@@ -31,11 +31,11 @@
 
         <div class="howto">
           <p>
-            You are the oncall engineer. Throw two-colour code blocks into the server. Line up <strong>four or more</strong> of one colour,
+            You are the on-call engineer. Throw two-colour code blocks into the server. Line up <strong>four or more</strong> of one colour,
             across or down, and they compile away, taking any bugs with them. Clear every bug to resolve the incident.
             If the stack reaches the top, the server crashes.
           </p>
-          <p>
+          <p class="keyboard-only">
             Each player sets up with their own keys: turn / drop keys pick a row, move keys change it.
             <kbd>M</kbd> changes the music. In a solo game the arrow keys work too. <kbd>Esc</kbd> pauses.
           </p>
@@ -43,14 +43,24 @@
       </section>
 
       <section id="arena" hidden>
-        <div id="panels"></div>
-        <div id="overlay" role="dialog" aria-live="polite" hidden>
-          <h2></h2>
-          <p></p>
-          <div class="actions"></div>
+        <div class="stage">
+          <div id="panels"></div>
+          <div id="overlay" role="dialog" aria-live="polite" hidden>
+            <h2></h2>
+            <p></p>
+            <div class="actions"></div>
+          </div>
+        </div>
+        <!-- On-screen controls for touch screens: the same triangle as the keys. -->
+        <div id="pad" hidden>
+          <button type="button" data-action="turn" aria-label="Turn">↻</button>
+          <button type="button" data-action="left" aria-label="Left">◀</button>
+          <button type="button" data-action="down" aria-label="Drop faster">▼</button>
+          <button type="button" data-action="right" aria-label="Right">▶</button>
+          <button type="button" id="pause" aria-label="Pause">❚❚</button>
         </div>
       </section>
     </main>
-    <noscript>Oncall needs JavaScript to run.</noscript>
+    <noscript>On-call needs JavaScript to run.</noscript>
   </body>
 </html>

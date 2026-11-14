@@ -8,7 +8,7 @@ export const PH = 160;
 const CELL = 8;
 const WX = 20; // well origin
 const WY = 40;
-const CX = 10; // the oncall engineer stands on top of the rack
+const CX = 10; // the on-call engineer stands on top of the rack
 const CY = 20;
 
 // Code/bug colours: teal, orange, violet. m = main, d = dark, l = light.
