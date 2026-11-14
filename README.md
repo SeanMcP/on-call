@@ -29,6 +29,9 @@ keys (turn and drop pick a row, left and right change it), `M` changes the music
 On a phone, or any window narrower than 700 px, the game is one player with on-screen buttons in the same
 triangle: turn on top; left, down, right below. Touch screens of any width get the buttons for solo games.
 
+It can be installed to a phone's home screen (Share → Add to Home Screen on iPhone, or the browser's install
+prompt on Android and desktop) and plays offline after the first visit.
+
 With two or more players everyone gets the same sequence of blocks; the first to clear their bugs wins the
 round, as does the last server left running. `?autostart=2` in the URL jumps straight into a two-player match.
 
@@ -42,6 +45,8 @@ round, as does the last server left running. `?autostart=2` in the URL jumps str
 | `js/render.js`  | Canvas drawing and animation.                                |
 | `js/audio.js`   | Chiptune songs and sound effects, synthesised with Web Audio. |
 | `js/main.js`    | Settings screen, match flow and the frame loop.              |
+| `sw.js`         | Service worker for offline play. Lists every file to save.   |
+| `tools/make-icons.mjs` | Redraws `icons/` from the bug sprite. Run it only if the art changes. |
 
 Tests need only Node:
 

@@ -455,3 +455,10 @@ if (auto >= 1 && auto <= 4) {
 }
 
 requestAnimationFrame(frame);
+
+// Offline play and home-screen install. Service workers need https or localhost.
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {
+    // not fatal: the game still works, just not offline
+  });
+}

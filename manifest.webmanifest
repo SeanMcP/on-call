@@ -1,0 +1,17 @@
+{
+  "name": "On-call",
+  "short_name": "On-call",
+  "description": "You are the on-call engineer and the pager just went off. Squash the bugs before the server crashes.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0d1a",
+  "theme_color": "#0a0d1a",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

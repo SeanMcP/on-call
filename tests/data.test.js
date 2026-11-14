@@ -29,3 +29,15 @@ assert.equal(buildLookup([0, 1, 2, 3]).size, 16);
 assert.equal(buildLookup([1]).get('ArrowLeft').player, 1, 'solo player gets arrow keys');
 assert.equal(buildLookup([0, 1]).has('ArrowLeft'), false);
 console.log('data ok');
+
+// The service worker's offline list must name every file the game needs, and only real files.
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+const root = new URL('../', import.meta.url);
+const swFiles = JSON.parse(readFileSync(new URL('sw.js', root), 'utf8').match(/const FILES = (\[[^\]]*\])/)[1].replace(/'/g, '"').replace(/,\s*\]/, ']'));
+for (const f of swFiles) if (f !== './') assert.ok(existsSync(new URL(f, root)), `sw.js lists missing file ${f}`);
+for (const dir of ['js', 'css', 'icons']) {
+  for (const f of readdirSync(new URL(`${dir}/`, root))) assert.ok(swFiles.includes(`${dir}/${f}`), `sw.js is missing ${dir}/${f}`);
+}
+const manifest = JSON.parse(readFileSync(new URL('manifest.webmanifest', root), 'utf8'));
+for (const icon of manifest.icons) assert.ok(existsSync(new URL(icon.src, root)), `manifest icon missing: ${icon.src}`);
+console.log('pwa files ok');
