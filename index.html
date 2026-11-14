@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Oncall</title>
+    <meta name="description" content="You are the oncall engineer and the pager just went off. A falling-block puzzle game for one to four players on one keyboard.">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <main>
+      <section id="menu">
+        <header>
+          <h1>ON<span>CALL</span></h1>
+          <p class="tagline">It's after hours. The pager just went off.</p>
+        </header>
+
+        <div id="slots"></div>
+
+        <div class="shared">
+          <div id="music" class="row">
+            <span class="name">MUSIC</span>
+            <button type="button" data-dir="-1" aria-label="Previous track">◀</button>
+            <output></output>
+            <button type="button" data-dir="1" aria-label="Next track">▶</button>
+          </div>
+          <button type="button" id="start">START <kbd>Enter</kbd></button>
+        </div>
+
+        <div class="howto">
+          <p>
+            You are the oncall engineer. Throw two-colour code blocks into the server. Line up <strong>four or more</strong> of one colour,
+            across or down, and they compile away, taking any bugs with them. Clear every bug to resolve the incident.
+            If the stack reaches the top, the server crashes.
+          </p>
+          <p>
+            Each player sets up with their own keys: turn / drop keys pick a row, move keys change it.
+            <kbd>M</kbd> changes the music. In a solo game the arrow keys work too. <kbd>Esc</kbd> pauses.
+          </p>
+        </div>
+      </section>
+
+      <section id="arena" hidden>
+        <div id="panels"></div>
+        <div id="overlay" role="dialog" aria-live="polite" hidden>
+          <h2></h2>
+          <p></p>
+          <div class="actions"></div>
+        </div>
+      </section>
+    </main>
+    <noscript>Oncall needs JavaScript to run.</noscript>
+  </body>
+</html>

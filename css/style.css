@@ -1,0 +1,296 @@
+:root {
+  --bg: #0a0d1a;
+  --panel: #151a33;
+  --edge: #2a3050;
+  --ink: #e8ecff;
+  --dim: #8f9ac9;
+  --gold: #ffc857;
+  --teal: #2ee6c8;
+  --orange: #ff9a3c;
+  --violet: #b07bff;
+  --px: 3px; /* size of one "pixel" in the chunky UI borders */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+main {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+kbd {
+  font: inherit;
+  font-size: 0.85em;
+  padding: 0 0.4em;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--edge);
+  border: 0;
+  padding: 2px 8px;
+  cursor: pointer;
+  box-shadow: 0 var(--px) 0 #171b33;
+}
+
+button:hover {
+  background: #3a4270;
+}
+
+button:active {
+  transform: translateY(var(--px));
+  box-shadow: none;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- settings screen ---- */
+
+#menu {
+  width: min(100%, 880px);
+  display: grid;
+  gap: 20px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(40px, 9vw, 76px);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  color: var(--teal);
+  text-shadow:
+    var(--px) var(--px) 0 var(--violet),
+    calc(var(--px) * 2) calc(var(--px) * 2) 0 #171b33;
+}
+
+h1 span {
+  color: var(--orange);
+}
+
+.tagline {
+  margin: 8px 0 0;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+#slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.slot {
+  background: var(--panel);
+  border: var(--px) solid var(--pc);
+  padding: 12px 10px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  min-width: 0;
+}
+
+.slot.off {
+  border-color: var(--edge);
+}
+
+.slot.off h2,
+.slot.off .row:not([data-row='on']) {
+  opacity: 0.35;
+}
+
+.slot h2 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  color: var(--pc);
+}
+
+.avatar {
+  width: 72px;
+  height: 84px;
+  image-rendering: pixelated;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 3.3em auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 3px 4px;
+  border: 1px solid transparent;
+}
+
+.row .name {
+  text-align: left;
+  color: var(--dim);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.row output {
+  white-space: nowrap;
+}
+
+.row button {
+  padding: 2px 5px;
+}
+
+.slot .row.focus {
+  border-color: var(--pc);
+  background: #1c2244;
+}
+
+.keys {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.shared {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+#music {
+  width: auto;
+  grid-template-columns: auto auto 6.5em auto;
+  background: var(--panel);
+  border: var(--px) solid var(--edge);
+  padding: 6px 10px;
+}
+
+#start {
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  padding: 8px 22px;
+  background: var(--teal);
+  color: #06231f;
+  box-shadow: 0 var(--px) 0 #0f8f86;
+}
+
+#start:hover {
+  background: #7ff5e0;
+}
+
+.howto {
+  max-width: 62ch;
+  margin: 0 auto;
+  color: var(--dim);
+  font-size: 12px;
+  text-align: left;
+}
+
+.howto p {
+  margin: 0 0 8px;
+}
+
+.howto strong {
+  color: var(--ink);
+}
+
+/* ---- game screen ---- */
+
+#arena {
+  position: relative;
+  width: 100%;
+}
+
+#panels {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.panel {
+  text-align: center;
+}
+
+.panel canvas {
+  display: block;
+  /* as tall as the window allows, or as wide as an equal share of it allows */
+  height: min(calc(100vh - 90px), calc((100vw - 32px - (var(--n) - 1) * 16px) / var(--n) * 160 / 104));
+  aspect-ratio: 104 / 160;
+  image-rendering: pixelated;
+  border: var(--px) solid var(--pc);
+}
+
+#overlay {
+  position: absolute;
+  left: 50%;
+  bottom: 56px; /* low enough to leave each server's own banner visible */
+  transform: translateX(-50%);
+  min-width: min(90vw, 340px);
+  padding: 18px 22px;
+  text-align: center;
+  background: rgba(10, 13, 26, 0.94);
+  border: var(--px) solid var(--gold);
+  box-shadow: 0 0 0 var(--px) #171b33;
+}
+
+#overlay h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+#overlay p {
+  margin: 0 0 14px;
+  color: var(--dim);
+  white-space: pre-wrap;
+}
+
+#overlay .actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#overlay button {
+  padding: 5px 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active {
+    transform: none;
+  }
+}
