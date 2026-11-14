@@ -330,24 +330,26 @@ h1 span {
 }
 
 .pad-on #arena {
-  --reserve: 220px;
+  --reserve: 180px;
 }
 
 #pad {
   --key: 72px;
   display: grid;
-  grid-template-columns: repeat(3, var(--key));
+  grid-template-columns: repeat(4, 1fr);
   grid-template-areas:
-    '. turn pause'
-    'left down right';
-  gap: 10px;
+    '. . . pause'
+    'left right down turn';
+  gap: 8px 10px;
   justify-content: center;
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 #pad button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 64px;
-  font-size: 26px;
   line-height: 1;
   padding: 0;
   border: var(--px) solid #4a5380;
@@ -358,6 +360,20 @@ h1 span {
   -webkit-touch-callout: none;
 }
 
+/* 8-bit icons: whole-pixel shapes drawn with hard edges. */
+#pad svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+  pointer-events: none;
+}
+
+#pad [data-action='turn'] svg {
+  width: 32px;
+  height: 32px;
+}
+
 #pad button.held {
   background: var(--teal);
   color: #06231f;
@@ -365,20 +381,23 @@ h1 span {
   box-shadow: none;
 }
 
-#pad [data-action='turn'] { grid-area: turn; }
 #pad [data-action='left'] { grid-area: left; }
-#pad [data-action='down'] { grid-area: down; }
 #pad [data-action='right'] { grid-area: right; }
+#pad [data-action='down'] { grid-area: down; }
+#pad [data-action='turn'] { grid-area: turn; }
 
 #pad #pause {
   grid-area: pause;
   justify-self: end;
-  align-self: start;
   width: 44px;
-  height: 44px;
-  font-size: 13px;
+  height: 36px;
   color: var(--dim);
   border-color: var(--edge);
+}
+
+#pad #pause svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* A phone on its side: buttons move to the bottom corners, under each thumb. */
@@ -393,10 +412,10 @@ h1 span {
     right: max(16px, env(safe-area-inset-right));
     bottom: max(16px, env(safe-area-inset-bottom));
     margin: 0;
-    grid-template-columns: var(--key) var(--key) 1fr var(--key);
+    grid-template-columns: var(--key) var(--key) 1fr var(--key) var(--key);
     grid-template-areas:
-      'pause . . turn'
-      'left right . down';
+      'pause . . . .'
+      'left right . down turn';
     pointer-events: none;
   }
 
