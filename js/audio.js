@@ -259,6 +259,8 @@ class ChipAudio {
         return [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
           this.tone('square', f * up, t + i * 0.05, 0.07, 0.12, out));
       }
+      case 'count': return this.tone('square', 440, t, 0.12, 0.14, out);
+      case 'go': return this.tone('square', 880, t, 0.3, 0.16, out);
       case 'win': return seq('square', ['C5', 'E5', 'G5', 'E5', 'G5', 'C6'], 0.11, 0.16);
       case 'lose': return seq('sawtooth', ['A4', 'F4', 'D4', 'A3', 'F3'], 0.14, 0.13);
     }

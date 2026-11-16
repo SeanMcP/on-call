@@ -93,17 +93,40 @@ button:disabled {
 
 h1 {
   margin: 0;
-  font-size: clamp(40px, 9vw, 76px);
-  line-height: 1;
-  letter-spacing: 0.06em;
-  color: var(--teal);
-  text-shadow:
-    var(--px) var(--px) 0 var(--violet),
-    calc(var(--px) * 2) calc(var(--px) * 2) 0 #171b33;
+  line-height: 0;
 }
 
-h1 span {
-  color: var(--orange);
+/* Pixel-font text (js/pixelfont.js): whole-pixel squares with hard edges. */
+.pixel-text {
+  display: inline-block;
+  height: 1em;
+  width: auto;
+  shape-rendering: crispEdges;
+  fill: currentColor;
+  overflow: visible;
+}
+
+h1 .pixel-text {
+  height: clamp(42px, 9vw, 77px);
+  /* the same chunky two-step shadow as before */
+  filter: drop-shadow(var(--px) var(--px) 0 var(--violet)) drop-shadow(var(--px) var(--px) 0 #171b33);
+}
+
+h1 .on {
+  fill: var(--teal);
+}
+
+h1 .call {
+  fill: var(--orange);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .tagline {
@@ -304,6 +327,33 @@ h1 span {
   aspect-ratio: 104 / 160;
   image-rendering: pixelated;
   border: var(--px) solid var(--pc);
+}
+
+/* 3… 2… 1… GO! over the servers before each round. */
+#countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--gold);
+  z-index: 1;
+  /* dim the servers while counting down */
+  background: rgba(10, 13, 26, 0.72);
+}
+
+#countdown[hidden] {
+  display: none;
+}
+
+#countdown .pixel-text {
+  box-sizing: content-box;
+  padding: 16px 22px;
+  background: rgba(10, 13, 26, 0.94);
+  border: var(--px) solid var(--gold);
+  box-shadow: 0 0 0 var(--px) #171b33;
+  height: clamp(56px, 14vw, 112px);
 }
 
 #overlay {

@@ -4,6 +4,7 @@ import { Game, SPEEDS, MAX_LEVEL } from './engine.js';
 import { KEYMAPS, buildLookup } from './input.js';
 import { createRenderer, drawAvatar, PLAYER_COLORS } from './render.js';
 import { audio, TRACKS } from './audio.js';
+import { pixelText } from './pixelfont.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const STORE_KEY = 'on-call-settings-v1';
@@ -18,7 +19,12 @@ const arenaEl = $('#arena');
 const panelsEl = $('#panels');
 const overlayEl = $('#overlay');
 const padEl = $('#pad');
+const countdownEl = $('#countdown');
+const GO_MS = 600; // how long GO! stays up; play starts once it is gone
+const COUNTDOWN_MS = 3000 + GO_MS; // 3… 2… 1… GO!
 const musicOut = $('#music output');
+
+$('h1').insertAdjacentHTML('beforeend', pixelText([['ON-', 'on'], ['CALL', 'call']]));
 
 // --- settings ---------------------------------------------------------------
 
@@ -181,7 +187,8 @@ function menuKey(e) {
 
 // --- match ------------------------------------------------------------------
 
-let mode = 'menu'; // 'menu' | 'play' | 'paused' | 'over'
+let mode = 'menu'; // 'menu' | 'countdown' | 'play' | 'paused' | 'over'
+let countdown = 0; // ms left before a round starts
 let players = []; // { slot, game, draw, held, das, wins }
 let keyLookup = new Map();
 let wins = [0, 0, 0, 0];
@@ -218,9 +225,38 @@ function startRound() {
     p.das = { dir: 0, t: 0 };
   }
   overlayEl.hidden = true;
-  mode = 'play';
+  mode = 'countdown';
+  countdown = COUNTDOWN_MS;
+  showCount(3);
   audio.setPaused(false);
-  audio.startMusic();
+  audio.stopMusic();
+}
+
+/** Show a number (or GO!) over the servers, or hide the countdown with null. */
+function showCount(n) {
+  countdownEl.hidden = n === null;
+  if (n === null) return;
+  countdownEl.innerHTML = pixelText(n === 0 ? 'GO!' : String(n));
+  countdownEl.setAttribute('aria-label', n === 0 ? 'Go!' : String(n));
+  audio.sfx(n === 0 ? 'go' : 'count');
+}
+
+/** What the countdown shows with `ms` left: 3, 2, 1, then 0 for GO!. */
+const countAt = (ms) => Math.max(0, Math.ceil((ms - GO_MS) / 1000));
+
+function tickCountdown(dt) {
+  if (mode !== 'countdown') return;
+  const before = countAt(countdown);
+  countdown -= dt;
+  if (countdown <= 0) {
+    // the whole countdown, GO! included, is over: clear the screen and play
+    countdown = 0;
+    showCount(null);
+    mode = 'play';
+    audio.startMusic();
+  } else if (countAt(countdown) !== before) {
+    showCount(countAt(countdown));
+  }
 }
 
 function endRound(winners) {
@@ -228,6 +264,7 @@ function endRound(winners) {
   audio.stopMusic();
   let title;
   let detail = '';
+  let again = 'Next round';
   if (players.length === 1) {
     const s = settings.players[players[0].slot];
     if (winners.length) {
@@ -238,10 +275,12 @@ function endRound(winners) {
         detail = `Next page: level ${s.level}, ${s.level * 4} bugs.`;
       } else {
         detail = 'That was the buggiest server there is. Legend.';
+        again = 'Play again';
       }
     } else {
       title = 'SERVER CRASHED';
       detail = `${players[0].game.bugs} bugs survived. Escalate and try again.`;
+      again = 'Try again';
     }
   } else if (winners.length) {
     for (const p of winners) wins[p.slot]++;
@@ -250,9 +289,10 @@ function endRound(winners) {
   } else {
     title = 'EVERY SERVER CRASHED';
     detail = 'Nobody sleeps tonight.';
+    again = 'Try again';
   }
   if (winners.length) audio.sfx('win');
-  showOverlay(title, detail, [['Next round', 'Enter', startRound], ['Settings', 'Esc', toMenu]]);
+  showOverlay(title, detail, [[again, 'Enter', startRound], ['Settings', 'Esc', toMenu]]);
 }
 
 function checkRound() {
@@ -288,14 +328,17 @@ function showOverlay(title, detail, actions) {
 
 function setPaused(paused) {
   if (!paused && tooNarrow()) return;
-  mode = paused ? 'paused' : 'play';
+  mode = paused ? 'paused' : countdown > 0 ? 'countdown' : 'play';
   audio.setPaused(paused);
+  countdownEl.hidden = paused || countdown <= 0;
   if (paused) showOverlay('PAUSED', 'Coffee break.', [['Resume', 'Esc', () => setPaused(false)], ['Settings', 'Backspace', toMenu]]);
   else overlayEl.hidden = true;
 }
 
 function toMenu() {
   mode = 'menu';
+  countdown = 0;
+  countdownEl.hidden = true;
   audio.setPaused(false);
   audio.stopMusic();
   overlayEl.hidden = true;
@@ -391,7 +434,7 @@ muteBtn.addEventListener('click', () => {
   showMuted();
 });
 $('#pause').addEventListener('click', () => {
-  if (mode === 'play') setPaused(true);
+  if (mode === 'play' || mode === 'countdown') setPaused(true);
 });
 
 /** A multi-player match cannot be shown on a narrow screen. */
@@ -425,7 +468,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (mode === 'menu') return menuKey(e);
   if (e.code === 'Escape') {
-    if (mode === 'play') setPaused(true);
+    if (mode === 'play' || mode === 'countdown') setPaused(true);
     else if (mode === 'paused') setPaused(false);
     else toMenu();
     return;
@@ -445,7 +488,7 @@ window.addEventListener('blur', () => {
   for (const p of players) if (p.held) p.held = { left: false, right: false, down: false };
 });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden && mode === 'play') setPaused(true);
+  if (document.hidden && (mode === 'play' || mode === 'countdown')) setPaused(true);
 });
 
 // --- frame loop -----------------------------------------------------------------
@@ -458,6 +501,7 @@ function frame(now) {
   const dt = Math.min(50, now - last);
   last = now;
 
+  tickCountdown(dt);
   if (mode === 'play') {
     for (const p of players) {
       const { game, das, held } = p;

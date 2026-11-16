@@ -21,7 +21,7 @@
     <main>
       <section id="menu">
         <header>
-          <h1>ON-<span>CALL</span></h1>
+          <h1><span class="visually-hidden">On-call</span></h1>
           <p class="tagline">A puzzle game about fixing bugs at 3 a.m.</p>
         </header>
 
@@ -62,6 +62,7 @@
       <section id="arena" hidden>
         <div class="stage">
           <div id="panels"></div>
+          <div id="countdown" aria-live="assertive" hidden></div>
           <div id="overlay" role="dialog" aria-live="polite" hidden>
             <h2></h2>
             <p></p>

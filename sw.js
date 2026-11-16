@@ -16,6 +16,7 @@ const FILES = [
   'js/render.js',
   'js/sprites.js',
   'js/audio.js',
+  'js/pixelfont.js',
   'icons/favicon.svg',
   'icons/favicon-32.png',
   'icons/icon-192.png',
