@@ -132,7 +132,7 @@ class ChipAudio {
         if (!AC) return;
         this.ctx = new AC();
         this.master = this.ctx.createGain();
-        this.master.gain.value = 0.5;
+        this.master.gain.value = this.muted ? 0 : 0.5;
         this.master.connect(this.ctx.destination);
         const n = this.ctx.sampleRate;
         this.noise = this.ctx.createBuffer(1, n, n);
@@ -149,6 +149,12 @@ class ChipAudio {
   setTrack(id) {
     this.track = id;
     if (this.wantMusic) this.startMusic();
+  }
+
+  /** Silences everything (effects and music) without stopping anything. */
+  setMuted(muted) {
+    this.muted = muted;
+    if (this.master) this.master.gain.value = muted ? 0 : 0.5;
   }
 
   setPaused(paused) {

@@ -113,6 +113,37 @@ h1 span {
   text-transform: uppercase;
 }
 
+/* The story: a page from the server, then what the job is. */
+.story {
+  max-width: 52ch;
+  margin: 0 auto;
+  font-size: 13px;
+  text-align: left;
+}
+
+.story p {
+  margin: 0 0 8px;
+}
+
+.story strong {
+  color: var(--teal);
+}
+
+.alert {
+  padding: 8px 12px;
+  border: var(--px) solid var(--orange);
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: bold;
+}
+
+.alert span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--orange);
+}
+
 #slots {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -173,7 +204,18 @@ h1 span {
 }
 
 .row button {
-  padding: 2px 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px;
+}
+
+/* 8-bit arrows: whole-pixel shapes drawn with hard edges. */
+.row button svg {
+  width: 8px;
+  height: 14px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
 }
 
 .slot .row.focus {
@@ -336,10 +378,9 @@ h1 span {
 #pad {
   --key: 72px;
   display: grid;
+  /* the button layout setting fills these in (see [data-pad] below) */
   grid-template-columns: repeat(4, 1fr);
-  grid-template-areas:
-    '. . . pause'
-    'left down turn right';
+  grid-template-areas: 'top top top top' var(--row);
   gap: 8px 10px;
   justify-content: center;
   margin-top: 10px;
@@ -381,23 +422,68 @@ h1 span {
   box-shadow: none;
 }
 
+/* Button layouts, picked with the numbered buttons above the pad. --row is the portrait row; --wide is the
+   bottom row of a phone on its side, where the middle column is the gap between thumbs. */
+[data-pad='split'] #pad { --row: 'left down turn right'; --wide: 'left down . turn right'; }
+[data-pad='row'] #pad { --row: 'left right down turn'; --wide: 'left right . down turn'; }
+[data-pad='lefty'] #pad { --row: 'turn down left right'; --wide: 'turn down . left right'; }
+
 #pad [data-action='left'] { grid-area: left; }
 #pad [data-action='right'] { grid-area: right; }
 #pad [data-action='down'] { grid-area: down; }
 #pad [data-action='turn'] { grid-area: turn; }
 
-#pad #pause {
-  grid-area: pause;
-  justify-self: end;
-  width: 44px;
+/* Small buttons above the main ones: the button layouts, then pause. */
+#pad .pad-top {
+  grid-area: top;
+  display: flex;
+  gap: 6px;
+}
+
+#layouts {
+  display: flex;
+  gap: 6px;
+}
+
+#layouts-label {
+  align-self: center;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--dim);
+}
+
+#pad .pad-top button {
   height: 36px;
+  min-width: 44px;
+  padding: 0 6px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
   color: var(--dim);
   border-color: var(--edge);
+}
+
+#pad .pad-top button[aria-pressed='true'] {
+  color: var(--teal);
+  border-color: var(--teal);
+}
+
+#pad #mute {
+  margin-left: auto;
 }
 
 #pad #pause svg {
   width: 14px;
   height: 14px;
+}
+
+#pad #mute svg {
+  width: 18px;
+  height: 14px;
+}
+
+#mute[aria-pressed='true'] .on,
+#mute[aria-pressed='false'] .off {
+  display: none;
 }
 
 /* A phone on its side: buttons move to the bottom corners, under each thumb. */
@@ -413,18 +499,12 @@ h1 span {
     bottom: max(16px, env(safe-area-inset-bottom));
     margin: 0;
     grid-template-columns: var(--key) var(--key) 1fr var(--key) var(--key);
-    grid-template-areas:
-      'pause . . . .'
-      'left right . down turn';
+    grid-template-areas: 'top top top top top' var(--wide);
     pointer-events: none;
   }
 
   #pad button {
     pointer-events: auto;
-  }
-
-  #pad #pause {
-    justify-self: start;
   }
 
   #overlay {

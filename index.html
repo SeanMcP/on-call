@@ -22,26 +22,35 @@
       <section id="menu">
         <header>
           <h1>ON-<span>CALL</span></h1>
-          <p class="tagline">It's after hours. The pager just went off.</p>
+          <p class="tagline">A puzzle game about fixing bugs at 3 a.m.</p>
         </header>
+
+        <div class="story">
+          <p class="alert"><span>ALERT · 3:07 AM</span> Bugs in the server. Site going down.</p>
+          <p>
+            When a website breaks in the middle of the night, the <strong>on-call engineer</strong> gets out of bed
+            to fix it. Tonight, <b>that's you</b>. Add code to the server
+            and squash every bug before everything crashes.
+          </p>
+        </div>
 
         <div id="slots"></div>
 
         <div class="shared">
           <div id="music" class="row">
             <span class="name">MUSIC</span>
-            <button type="button" data-dir="-1" aria-label="Previous track">◀</button>
+            <button type="button" data-dir="-1" aria-label="Previous track"><svg viewBox="0 0 4 7" aria-hidden="true" focusable="false"><path d="M0 3h1v1H0zM1 2h1v3H1zM2 1h1v5H2zM3 0h1v7H3z"/></svg></button>
             <output></output>
-            <button type="button" data-dir="1" aria-label="Next track">▶</button>
+            <button type="button" data-dir="1" aria-label="Next track"><svg viewBox="0 0 4 7" aria-hidden="true" focusable="false"><path d="M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z"/></svg></button>
           </div>
           <button type="button" id="start">START <kbd>Enter</kbd></button>
         </div>
 
         <div class="howto">
           <p>
-            You are the on-call engineer. Throw two-colour code blocks into the server. Line up <strong>four or more</strong> of one colour,
-            across or down, and they compile away, taking any bugs with them. Clear every bug to resolve the incident.
-            If the stack reaches the top, the server crashes.
+            <strong>How to fix it:</strong> bugs come in three colours, and so does your code. Each block has two
+            coloured halves. Line up <strong>four or more</strong> of one colour, across or down, and the code
+            compiles away, taking any bugs with it. Let the code pile up to the top and the server crashes.
           </p>
           <p class="keyboard-only">
             Each player sets up with their own keys: turn / drop keys pick a row, move keys change it.
@@ -64,8 +73,13 @@
           <button type="button" data-action="left" aria-label="Left"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><path d="M3 0h1v1H3zM2 1h2v1H2zM1 2h6v1H1zM0 3h7v1H0zM1 4h6v1H1zM2 5h2v1H2zM3 6h1v1H3z"/></svg></button>
           <button type="button" data-action="right" aria-label="Right"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><g transform="rotate(180 3.5 3.5)"><path d="M3 0h1v1H3zM2 1h2v1H2zM1 2h6v1H1zM0 3h7v1H0zM1 4h6v1H1zM2 5h2v1H2zM3 6h1v1H3z"/></g></svg></button>
           <button type="button" data-action="down" aria-label="Drop faster"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><g transform="rotate(-90 3.5 3.5)"><path d="M3 0h1v1H3zM2 1h2v1H2zM1 2h6v1H1zM0 3h7v1H0zM1 4h6v1H1zM2 5h2v1H2zM3 6h1v1H3z"/></g></svg></button>
-          <button type="button" data-action="turn" aria-label="Turn"><svg viewBox="0 0 8 8" aria-hidden="true" focusable="false"><path d="M4 0h1v1H4zM2 1h4v1H2zM4 2h1v1H4zM1 2h1v1H1zM0 3h1v3H0zM1 6h1v1H1zM2 7h4v1H2zM6 6h1v1H6zM7 4h1v2H7z"/></svg></button>
-          <button type="button" id="pause" aria-label="Pause"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><path d="M1 0h2v7H1zM4 0h2v7H4z"/></svg></button>
+          <button type="button" data-action="turn" aria-label="Turn"><svg viewBox="0 0 9 9" aria-hidden="true" focusable="false"><path d="M3 0h3v1H3zM1 1h2v1H1zM6 1h2v1H6zM1 2h1v1H1zM6 2h3v1H6zM0 3h1v3H0zM7 3h1v1H7zM1 6h1v1H1zM7 6h1v1H7zM1 7h2v1H1zM6 7h2v1H6zM3 8h3v1H3z"/></svg></button>
+          <div class="pad-top">
+            <span id="layouts-label">LAYOUT</span>
+            <div id="layouts" role="group" aria-labelledby="layouts-label"></div>
+            <button type="button" id="mute" aria-label="Mute" aria-pressed="false"><svg class="on" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v3H5zM7 1h1v5H7z"/></svg><svg class="off" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v1H5zM8 2h1v1H8zM6 3h2v2H6zM5 5h1v1H5zM8 5h1v1H8z"/></svg></button>
+            <button type="button" id="pause" aria-label="Pause"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><path d="M1 0h2v7H1zM4 0h2v7H4z"/></svg></button>
+          </div>
         </div>
       </section>
     </main>

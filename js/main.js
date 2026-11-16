@@ -22,10 +22,20 @@ const musicOut = $('#music output');
 
 // --- settings ---------------------------------------------------------------
 
+// Arrangements of the on-screen buttons, picked with the small buttons above them during play.
+// The CSS places the buttons for each id.
+const PAD_LAYOUTS = [
+  { id: 'split' }, // 1: ◀ ▼ ↻ ▶
+  { id: 'row' }, // 2: ◀ ▶ ▼ ↻
+  { id: 'lefty' }, // 3: ↻ ▼ ◀ ▶
+];
+
 function loadSettings() {
   const settings = {
     players: [0, 1, 2, 3].map((i) => ({ on: i === 0, level: 3, speed: 1 })),
     music: 'hotfix',
+    pad: PAD_LAYOUTS[0].id,
+    muted: false,
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY));
@@ -38,6 +48,8 @@ function loadSettings() {
       };
     });
     if (TRACKS.some((t) => t.id === saved.music)) settings.music = saved.music;
+    if (PAD_LAYOUTS.some((l) => l.id === saved.pad)) settings.pad = saved.pad;
+    settings.muted = saved.muted === true;
   } catch {
     // nothing saved yet, or storage is unavailable: defaults are fine
   }
@@ -54,6 +66,7 @@ function saveSettings() {
 
 const settings = loadSettings();
 audio.track = settings.music;
+audio.setMuted(settings.muted);
 
 // --- screen size and touch ------------------------------------------------------
 
@@ -70,6 +83,10 @@ const activeSlots = () => [0, 1, 2, 3].filter(isOn);
 
 // --- settings screen ----------------------------------------------------------
 
+// Pixel-art arrows for the ◀ ▶ buttons (the music row has the same ones in index.html).
+const ICON_PREV = '<svg viewBox="0 0 4 7" aria-hidden="true" focusable="false"><path d="M0 3h1v1H0zM1 2h1v3H1zM2 1h1v5H2zM3 0h1v7H3z"/></svg>';
+const ICON_NEXT = '<svg viewBox="0 0 4 7" aria-hidden="true" focusable="false"><path d="M0 0h1v7H0zM1 1h1v5H1zM2 2h1v3H2zM3 3h1v1H3z"/></svg>';
+
 const focusRow = [0, 0, 0, 0]; // which row each player's keys are on
 const menuKeys = buildLookup([0, 1, 2, 3]);
 
@@ -84,9 +101,9 @@ function buildMenu() {
           (row) => `
           <div class="row" data-row="${row}">
             <span class="name">${ROW_LABELS[row]}</span>
-            <button type="button" data-dir="-1" aria-label="Player ${i + 1} ${ROW_LABELS[row]} down">◀</button>
+            <button type="button" data-dir="-1" aria-label="Player ${i + 1} ${ROW_LABELS[row]} down">${ICON_PREV}</button>
             <output></output>
-            <button type="button" data-dir="1" aria-label="Player ${i + 1} ${ROW_LABELS[row]} up">▶</button>
+            <button type="button" data-dir="1" aria-label="Player ${i + 1} ${ROW_LABELS[row]} up">${ICON_NEXT}</button>
           </div>`,
         ).join('')}
         <p class="keys">${KEYMAPS[i].hint}</p>
@@ -345,6 +362,34 @@ for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
   padEl.addEventListener(type, (e) => padPress(e, false));
 }
 padEl.addEventListener('contextmenu', (e) => e.preventDefault()); // no long-press menu
+
+const layoutsEl = $('#layouts');
+layoutsEl.innerHTML = PAD_LAYOUTS.map(
+  (l, i) => `<button type="button" data-layout="${l.id}" aria-label="Layout ${i + 1}">${i + 1}</button>`,
+).join('');
+function showPadLayout() {
+  document.body.dataset.pad = settings.pad;
+  for (const btn of layoutsEl.children) btn.setAttribute('aria-pressed', btn.dataset.layout === settings.pad);
+}
+showPadLayout();
+layoutsEl.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-layout]');
+  if (!btn) return;
+  settings.pad = btn.dataset.layout;
+  saveSettings();
+  showPadLayout();
+});
+const muteBtn = $('#mute');
+function showMuted() {
+  muteBtn.setAttribute('aria-pressed', settings.muted);
+}
+showMuted();
+muteBtn.addEventListener('click', () => {
+  settings.muted = !settings.muted;
+  audio.setMuted(settings.muted);
+  saveSettings();
+  showMuted();
+});
 $('#pause').addEventListener('click', () => {
   if (mode === 'play') setPaused(true);
 });
