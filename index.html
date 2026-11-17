@@ -51,11 +51,28 @@
             <strong>How to fix it:</strong> bugs come in three colours, and so does your code. Each block has two
             coloured halves. Line up <strong>four or more</strong> of one colour, across or down, and the code
             compiles away, taking any bugs with it. Let the code pile up to the top and the server crashes.
+            Fix it fast: solo clears are timed, and your best time at each level and speed is kept as a record.
           </p>
           <p class="keyboard-only">
             Each player sets up with their own keys: turn / drop keys pick a row, move keys change it.
-            <kbd>M</kbd> changes the music. In a solo game the arrow keys work too. <kbd>Esc</kbd> pauses.
+            <kbd>M</kbd> changes the music and <kbd>R</kbd> shows your records. In a solo game the arrow keys work too. <kbd>Esc</kbd> pauses.
           </p>
+        </div>
+        <p class="records-link"><button type="button" id="show-records">Personal records <kbd>R</kbd></button></p>
+      </section>
+
+      <section id="records" hidden aria-labelledby="records-title">
+        <h2 id="records-title">PERSONAL RECORDS</h2>
+        <p class="sub">Fastest solo fix at each level and speed.</p>
+        <div class="table-wrap">
+          <table>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button type="button" id="close-records">BACK <kbd>Esc</kbd></button>
+          <button type="button" id="reset-records">Reset records</button>
         </div>
       </section>
 
@@ -65,7 +82,8 @@
           <div id="countdown" aria-live="assertive" hidden></div>
           <div id="overlay" role="dialog" aria-live="polite" hidden>
             <h2></h2>
-            <p></p>
+            <p class="note" hidden></p>
+            <p class="detail"></p>
             <div class="actions"></div>
           </div>
         </div>

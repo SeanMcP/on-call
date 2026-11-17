@@ -6,6 +6,11 @@ You play the on-call software engineer, throwing two-colour blocks of code into 
 or down, and the code compiles away, taking any bugs caught in it. Clear every bug to resolve the incident. If the
 stack blocks the top of the well, the server crashes.
 
+Every round is timed. The clock starts when the countdown's GO! clears, stops while the game is paused, and
+stops for good when the last bug is destroyed. The fastest solo clear of each level at each speed is kept on the
+device as a personal record; beat one and the end-of-round screen says so. `RECORDS` (or `R`) on the settings
+screen shows them all.
+
 ## Play
 
 Open `index.html` through any static web server (browsers do not load JavaScript modules from `file://`):
@@ -24,7 +29,7 @@ On GitHub Pages, serve the repository root. There is no build step and nothing t
 | 4      | ←    | ↓                | →     | ↑    |
 
 A solo player can also use the arrow keys. `Esc` pauses. On the settings screen each player uses their own
-keys (turn and drop pick a row, left and right change it), `M` changes the music and `Enter` starts.
+keys (turn and drop pick a row, left and right change it), `M` changes the music, `R` shows your records and `Enter` starts.
 
 On a phone, or any window narrower than 700 px, the game is one player with on-screen buttons in the same
 triangle: turn on top; left, down, right below. Touch screens of any width get the buttons for solo games.
@@ -44,12 +49,13 @@ round, as does the last server left running. `?autostart=2` in the URL jumps str
 | `js/sprites.js` | Pixel art and the pixel font, as text.                       |
 | `js/render.js`  | Canvas drawing and animation.                                |
 | `js/audio.js`   | Chiptune songs and sound effects, synthesised with Web Audio. |
-| `js/main.js`    | Settings screen, match flow and the frame loop.              |
+| `js/records.js` | Personal records (best solo time per level and speed).       |
+| `js/main.js`    | Settings and records screens, match flow and the frame loop. |
 | `sw.js`         | Service worker for offline play. Lists every file to save.   |
 | `tools/make-icons.mjs` | Redraws `icons/` from the bug sprite. Run it only if the art changes. |
 
 Tests need only Node:
 
 ```sh
-node tests/engine.test.js && node tests/data.test.js
+node tests/engine.test.js && node tests/data.test.js && node tests/records.test.js
 ```

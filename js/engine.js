@@ -83,7 +83,7 @@ export class Game {
     this.grid = new Array(W * H).fill(null);
     this.rand = makeRng(blockSeed);
     this.events = []; // drained by the host each frame (sound, effects)
-    this.score = 0;
+    this.time = 0; // ms of play: only advances while the host ticks the game, and stops when it ends
     this.chain = 0;
     this.blocks = 0;
     this.piece = null; // { x, y, o, colors:[a, b] } while falling
@@ -169,6 +169,7 @@ export class Game {
   // --- simulation -----------------------------------------------------------
 
   tick(dt, softDrop = false) {
+    if (!this.ended) this.time += dt;
     switch (this.state) {
       case 'throw':
         this.timer -= dt;
@@ -277,10 +278,11 @@ export class Game {
       }
     }
     for (const i of this.clearing) this.grid[i] = null;
-    this.score += (bugsCleared * 100 + (this.clearing.size - bugsCleared) * 10) * this.chain;
     this.bugs -= bugsCleared;
     this.clearing = new Set();
     if (this.bugs === 0) {
+      // Stop the clock the moment the last bug went, not at the end of the frame it went in.
+      this.time += Math.min(0, this.timer);
       this.state = 'won';
       this.events.push({ type: 'win' });
     } else {

@@ -100,7 +100,44 @@ test('four in a row clears, including bugs, and the round is won', () => {
   assert.equal(g.state, 'won');
   assert.equal(g.bugs, 0);
   assert.ok(g.grid.every((c) => c === null));
-  assert.equal(g.score, 220); // 2 bugs + 2 code segments
+});
+
+test('the clock runs while the game is ticked and stops on the last bug', () => {
+  const g = new Game({ level: 1 });
+  assert.equal(g.time, 0);
+  g.tick(250);
+  g.tick(250);
+  assert.equal(g.time, 500, 'counts every tick, the throw included');
+  // Not ticking (paused, counting down) leaves it alone.
+  assert.equal(g.time, 500);
+
+  const w = blank([1, 1]);
+  put(w, 3, H - 1, bug(1));
+  put(w, 4, H - 1, bug(1));
+  w.rotate(1);
+  w.move(-1);
+  w.rotate(1);
+  drop(w);
+  assert.equal(w.state, 'clear');
+  const before = w.time;
+  w.tick(CLEAR_MS + 300); // a long frame: the bug went 300 ms before it ended
+  assert.equal(w.state, 'won');
+  assert.equal(w.time, before + CLEAR_MS, 'stopped when the last bug went');
+  w.tick(1000);
+  assert.equal(w.time, before + CLEAR_MS, 'stays stopped once won');
+});
+
+test('the clock stops when the server crashes or is forced out', () => {
+  const g = new Game({ level: 1 });
+  g.tick(100);
+  g.lose();
+  g.tick(1000);
+  assert.equal(g.time, 100);
+  const h = new Game({ level: 1 });
+  h.tick(100);
+  h.forceEnd('out');
+  h.tick(1000);
+  assert.equal(h.time, 100);
 });
 
 test('three in a row does not clear', () => {
@@ -113,7 +150,7 @@ test('three in a row does not clear', () => {
   assert.equal(g.bugs, 2);
 });
 
-test('column clear, loose halves fall, bugs stay put, and chains score more', () => {
+test('column clear, loose halves fall, and bugs stay put', () => {
   const g = blank([0, 0]);
   // Column 0: three teal segments waiting for a fourth.
   for (let y = H - 3; y < H; y++) put(g, 0, y, code(0));
@@ -160,7 +197,7 @@ test('chain reaction: a falling segment completes a second line', () => {
   assert.equal(g.cell(0, H - 1), null, 'orange bug cleared by the chain');
   assert.equal(g.cell(6, H - 1).color, 0, 'leftover teal half fell to the floor');
   assert.equal(g.bugs, 1);
-  assert.equal(g.score, 4 * 10 * 1 + (100 + 3 * 10) * 2);
+  assert.equal(g.chain, 2);
 });
 
 test('horizontal blocks only fall when both halves are unsupported', () => {

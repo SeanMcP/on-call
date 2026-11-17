@@ -281,6 +281,113 @@ h1 .call {
   background: #7ff5e0;
 }
 
+/* A quiet link at the foot of the menu: it should not compete with START. */
+.records-link {
+  margin: -12px 0 0;
+}
+
+#show-records,
+#reset-records {
+  background: transparent;
+  box-shadow: none;
+  color: var(--dim);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#show-records:hover,
+#reset-records:hover {
+  color: var(--ink);
+}
+
+.touch #show-records {
+  padding: 12px 16px;
+}
+
+/* ---- records screen ---- */
+
+#records {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+#records h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+#records .sub {
+  margin: 0;
+  color: var(--dim);
+  font-size: 12px;
+}
+
+#records .table-wrap {
+  background: var(--panel);
+  border: var(--px) solid var(--edge);
+  padding: 6px 8px;
+}
+
+#records table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+#records th,
+#records td {
+  padding: 3px 6px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#records thead th {
+  color: var(--dim);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-weight: normal;
+  border-bottom: 1px solid var(--edge);
+}
+
+#records tbody th {
+  color: var(--dim);
+  font-weight: normal;
+  text-align: left;
+}
+
+#records thead th:first-child {
+  text-align: left;
+}
+
+#records tbody tr:nth-child(even) {
+  background: #1a2040;
+}
+
+#records td.none {
+  color: var(--edge);
+}
+
+#records .actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#records .actions button {
+  padding: 6px 14px;
+}
+
+.touch #records .actions button {
+  padding: 12px 18px;
+}
+
+
 .howto {
   max-width: 62ch;
   margin: 0 auto;
@@ -380,6 +487,22 @@ h1 .call {
   margin: 0 0 14px;
   color: var(--dim);
   white-space: pre-wrap;
+}
+
+#overlay .note {
+  margin: 0 0 8px;
+  padding: 4px 8px;
+  color: #06231f;
+  background: var(--teal);
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  animation: record-flash 0.5s steps(1) 4;
+}
+
+@keyframes record-flash {
+  50% {
+    background: var(--gold);
+  }
 }
 
 #overlay .actions {
@@ -565,5 +688,9 @@ h1 .call {
 @media (prefers-reduced-motion: reduce) {
   button:active {
     transform: none;
+  }
+
+  #overlay .note {
+    animation: none;
   }
 }

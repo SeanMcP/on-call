@@ -2,6 +2,7 @@
 
 import { W, H, CLEAR_MS, THROW_MS } from './engine.js';
 import { BUGS, ENGINEER, FONT } from './sprites.js';
+import { formatTime } from './records.js';
 
 export const PW = 104; // logical canvas size
 export const PH = 160;
@@ -227,7 +228,7 @@ function drawHud(ctx, game, pi, hud) {
   drawText(ctx, `P${pi + 1}`, x, 3, color, 2);
   if (hud.wins > 0) drawText(ctx, `WON ${hud.wins}`, x + 20, 5, '#ffc857');
   drawText(ctx, `BUGS ${String(game.bugs).padStart(2, '0')}`, x, 16, '#e8ecff');
-  drawText(ctx, `PTS ${game.score}`, x, 23, '#8f9ac9');
+  drawText(ctx, `TIME ${formatTime(game.time, 1)}`, x, 23, game.state === 'won' ? '#49e07c' : '#8f9ac9');
   drawText(ctx, `LV ${game.level}`, x, 30, '#8f9ac9');
 }
 

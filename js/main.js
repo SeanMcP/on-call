@@ -5,6 +5,7 @@ import { KEYMAPS, buildLookup } from './input.js';
 import { createRenderer, drawAvatar, PLAYER_COLORS } from './render.js';
 import { audio, TRACKS } from './audio.js';
 import { pixelText } from './pixelfont.js';
+import { createRecords, formatTime } from './records.js';
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const STORE_KEY = 'on-call-settings-v1';
@@ -23,6 +24,7 @@ const countdownEl = $('#countdown');
 const GO_MS = 600; // how long GO! stays up; play starts once it is gone
 const COUNTDOWN_MS = 3000 + GO_MS; // 3… 2… 1… GO!
 const musicOut = $('#music output');
+const recordsEl = $('#records');
 
 $('h1').insertAdjacentHTML('beforeend', pixelText([['ON-', 'on'], ['CALL', 'call']]));
 
@@ -71,6 +73,16 @@ function saveSettings() {
 }
 
 const settings = loadSettings();
+const records = createRecords(
+  // localStorage itself can throw on access (blocked storage); records then last for the visit
+  (() => {
+    try {
+      return localStorage;
+    } catch {
+      return { getItem: () => null, setItem() {}, removeItem() {} };
+    }
+  })(),
+);
 audio.track = settings.music;
 audio.setMuted(settings.muted);
 
@@ -167,6 +179,46 @@ $('#music').addEventListener('click', (e) => {
 });
 $('#start').addEventListener('click', () => startMatch());
 
+// --- records screen -----------------------------------------------------------
+
+function buildRecords() {
+  $('thead', recordsEl).innerHTML = `<tr><th scope="col">LV</th>${SPEEDS.map((sp) => `<th scope="col">${sp.label}</th>`).join('')}</tr>`;
+  let rows = '';
+  for (let level = 1; level <= MAX_LEVEL; level++) {
+    rows += `<tr><th scope="row">${level}</th>${SPEEDS.map((_, speed) => {
+      const ms = records.get(level, speed);
+      return ms === null ? '<td class="none">—</td>' : `<td>${formatTime(ms)}</td>`;
+    }).join('')}</tr>`;
+  }
+  $('tbody', recordsEl).innerHTML = rows;
+  $('#reset-records').disabled = records.empty;
+}
+
+function showRecords() {
+  mode = 'records';
+  buildRecords();
+  menuEl.hidden = true;
+  recordsEl.hidden = false;
+  $('#close-records').focus();
+}
+
+function hideRecords() {
+  mode = 'menu';
+  recordsEl.hidden = true;
+  menuEl.hidden = false;
+  refreshMenu();
+  $('#show-records').focus();
+}
+
+$('#show-records').addEventListener('click', showRecords);
+$('#close-records').addEventListener('click', hideRecords);
+$('#reset-records').addEventListener('click', () => {
+  if (!window.confirm('Erase every personal record? This cannot be undone.')) return;
+  records.clear();
+  buildRecords();
+  $('#close-records').focus();
+});
+
 function menuKey(e) {
   if (e.code === 'Enter' || e.code === 'Space') {
     if (e.target.closest?.('button')) return; // let the focused button do its thing
@@ -174,6 +226,7 @@ function menuKey(e) {
     return startMatch();
   }
   if (e.code === 'KeyM') return cycleMusic(1);
+  if (e.code === 'KeyR') return showRecords();
   const hit = menuKeys.get(e.code);
   if (!hit) return;
   e.preventDefault();
@@ -187,7 +240,7 @@ function menuKey(e) {
 
 // --- match ------------------------------------------------------------------
 
-let mode = 'menu'; // 'menu' | 'countdown' | 'play' | 'paused' | 'over'
+let mode = 'menu'; // 'menu' | 'records' | 'countdown' | 'play' | 'paused' | 'over'
 let countdown = 0; // ms left before a round starts
 let players = []; // { slot, game, draw, held, das, wins }
 let keyLookup = new Map();
@@ -264,17 +317,27 @@ function endRound(winners) {
   audio.stopMusic();
   let title;
   let detail = '';
+  let note = '';
   let again = 'Next round';
   if (players.length === 1) {
     const s = settings.players[players[0].slot];
     if (winners.length) {
+      const { game } = players[0];
+      const { record, previous } = records.submit(game.level, game.speed, game.time);
       title = 'INCIDENT RESOLVED!';
+      if (record) {
+        note = previous === null
+          ? `NEW RECORD! First fix of LV ${game.level} on ${SPEEDS[game.speed].label}.`
+          : `NEW RECORD! ${((previous - game.time) / 1000).toFixed(2)}s faster than ${formatTime(previous)}.`;
+      }
+      detail = `Fixed in ${formatTime(game.time)}.`;
+      if (!record) detail += ` Record: ${formatTime(previous)}.`;
       if (s.level < MAX_LEVEL) {
         s.level++;
         saveSettings();
-        detail = `Next page: level ${s.level}, ${s.level * 4} bugs.`;
+        detail += `\nNext page: level ${s.level}, ${s.level * 4} bugs.`;
       } else {
-        detail = 'That was the buggiest server there is. Legend.';
+        detail += '\nThat was the buggiest server there is. Legend.';
         again = 'Play again';
       }
     } else {
@@ -291,8 +354,8 @@ function endRound(winners) {
     detail = 'Nobody sleeps tonight.';
     again = 'Try again';
   }
-  if (winners.length) audio.sfx('win');
-  showOverlay(title, detail, [[again, 'Enter', startRound], ['Settings', 'Esc', toMenu]]);
+  if (winners.length) audio.sfx(note ? 'record' : 'win');
+  showOverlay(title, detail, [[again, 'Enter', startRound], ['Settings', 'Esc', toMenu]], note);
 }
 
 function checkRound() {
@@ -311,9 +374,11 @@ function checkRound() {
   }
 }
 
-function showOverlay(title, detail, actions) {
+function showOverlay(title, detail, actions, note = '') {
   $('h2', overlayEl).textContent = title;
-  $('p', overlayEl).textContent = detail;
+  $('.note', overlayEl).textContent = note;
+  $('.note', overlayEl).hidden = !note;
+  $('.detail', overlayEl).textContent = detail;
   const box = $('.actions', overlayEl);
   box.innerHTML = '';
   for (const [label, key, fn] of actions) {
@@ -447,7 +512,7 @@ function updateLayout() {
   const pad = wantsPad() && players.length === 1 && mode !== 'menu';
   padEl.hidden = !pad;
   document.body.classList.toggle('pad-on', pad);
-  if (mode === 'menu') return refreshMenu();
+  if (mode === 'menu' || mode === 'records') return refreshMenu();
   if (tooNarrow() && mode !== 'over') {
     mode = 'paused';
     audio.setPaused(true);
@@ -467,6 +532,13 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (mode === 'menu') return menuKey(e);
+  if (mode === 'records') {
+    if (e.code === 'Escape' || e.code === 'Backspace' || e.code === 'KeyR') {
+      e.preventDefault();
+      hideRecords();
+    }
+    return;
+  }
   if (e.code === 'Escape') {
     if (mode === 'play' || mode === 'countdown') setPaused(true);
     else if (mode === 'paused') setPaused(false);
