@@ -20,6 +20,7 @@ const arenaEl = $('#arena');
 const panelsEl = $('#panels');
 const overlayEl = $('#overlay');
 const padEl = $('#pad');
+const toolbarEl = $('#toolbar');
 const countdownEl = $('#countdown');
 const GO_MS = 600; // how long GO! stays up; play starts once it is gone
 const COUNTDOWN_MS = 3000 + GO_MS; // 3… 2… 1… GO!
@@ -30,7 +31,7 @@ $('h1').insertAdjacentHTML('beforeend', pixelText([['ON-', 'on'], ['CALL', 'call
 
 // --- settings ---------------------------------------------------------------
 
-// Arrangements of the on-screen buttons, picked with the small buttons above them during play.
+// Arrangements of the on-screen buttons, picked with the Control layout buttons at the top of the screen.
 // The CSS places the buttons for each id.
 const PAD_LAYOUTS = [
   { id: 'split' }, // 1: ◀ ▼ ↻ ▶
@@ -473,7 +474,7 @@ padEl.addEventListener('contextmenu', (e) => e.preventDefault()); // no long-pre
 
 const layoutsEl = $('#layouts');
 layoutsEl.innerHTML = PAD_LAYOUTS.map(
-  (l, i) => `<button type="button" data-layout="${l.id}" aria-label="Layout ${i + 1}">${i + 1}</button>`,
+  (l, i) => `<button type="button" data-layout="${l.id}" aria-label="Control layout ${i + 1}">${i + 1}</button>`,
 ).join('');
 function showPadLayout() {
   document.body.dataset.pad = settings.pad;
@@ -511,6 +512,7 @@ function updateLayout() {
   document.body.classList.toggle('touch', wantsPad());
   const pad = wantsPad() && players.length === 1 && mode !== 'menu';
   padEl.hidden = !pad;
+  toolbarEl.hidden = !pad;
   document.body.classList.toggle('pad-on', pad);
   if (mode === 'menu' || mode === 'records') return refreshMenu();
   if (tooNarrow() && mode !== 'over') {

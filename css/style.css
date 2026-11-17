@@ -553,8 +553,8 @@ h1 .call {
   display: grid;
   /* the button layout setting fills these in (see [data-pad] below) */
   grid-template-columns: repeat(4, 1fr);
-  grid-template-areas: 'top top top top' var(--row);
-  gap: 8px 10px;
+  grid-template-areas: var(--row);
+  gap: 10px;
   justify-content: center;
   margin-top: 10px;
 }
@@ -595,7 +595,7 @@ h1 .call {
   box-shadow: none;
 }
 
-/* Button layouts, picked with the numbered buttons above the pad. --row is the portrait row; --wide is the
+/* Button layouts, picked with the Control layout buttons in the toolbar. --row is the portrait row; --wide is the
    bottom row of a phone on its side, where the middle column is the gap between thumbs. */
 [data-pad='split'] #pad { --row: 'left down turn right'; --wide: 'left down . turn right'; }
 [data-pad='row'] #pad { --row: 'left right down turn'; --wide: 'left right . down turn'; }
@@ -606,50 +606,105 @@ h1 .call {
 #pad [data-action='down'] { grid-area: down; }
 #pad [data-action='turn'] { grid-area: turn; }
 
-/* Small buttons above the main ones: the button layouts, then pause. */
-#pad .pad-top {
-  grid-area: top;
-  display: flex;
-  gap: 6px;
+/* With the on-screen buttons on, the game screen is a column: toolbar at the top, the server in the
+   middle, the buttons at the bottom under the thumbs. */
+.pad-on main {
+  place-items: stretch center;
 }
 
+.pad-on #arena {
+  display: flex;
+  flex-direction: column;
+}
+
+.pad-on .stage {
+  margin: auto 0;
+}
+
+/* The toolbar: the button layouts on the left, sound and pause on the right. */
+#toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.toolbar-layout,
+.toolbar-end,
 #layouts {
   display: flex;
+  align-items: center;
   gap: 6px;
 }
 
 #layouts-label {
-  align-self: center;
   font-size: 10px;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--dim);
 }
 
-#pad .pad-top button {
+#toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 36px;
   min-width: 44px;
   padding: 0 6px;
   font-size: 10px;
   letter-spacing: 0.05em;
   color: var(--dim);
-  border-color: var(--edge);
+  border: var(--px) solid var(--edge);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-#pad .pad-top button[aria-pressed='true'] {
+/* The layouts are one segmented strip. The chosen one is lit: bright number, a pixel bar under it.
+   Focus is an outline, so the two never look alike. Mute shows its state with its icon instead. */
+#layouts {
+  gap: 0;
+  border: var(--px) solid var(--edge);
+  background: var(--panel);
+  box-shadow: 0 var(--px) 0 #171b33;
+}
+
+#toolbar #layouts button {
+  height: 30px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  font-size: 12px;
+}
+
+#toolbar #layouts button + button {
+  border-left: var(--px) solid var(--edge);
+}
+
+#toolbar #layouts button:active {
+  transform: none;
+}
+
+#toolbar #layouts button[aria-pressed='true'] {
+  background: var(--edge);
   color: var(--teal);
-  border-color: var(--teal);
+  box-shadow: inset 0 calc(-1 * var(--px)) 0 var(--teal);
+  cursor: default;
 }
 
-#pad #mute {
-  margin-left: auto;
+#toolbar svg {
+  fill: currentColor;
+  shape-rendering: crispEdges;
+  pointer-events: none;
 }
 
-#pad #pause svg {
+#pause svg {
   width: 14px;
   height: 14px;
 }
 
-#pad #mute svg {
+#mute svg {
   width: 18px;
   height: 14px;
 }
@@ -672,11 +727,28 @@ h1 .call {
     bottom: max(16px, env(safe-area-inset-bottom));
     margin: 0;
     grid-template-columns: var(--key) var(--key) 1fr var(--key) var(--key);
-    grid-template-areas: 'top top top top top' var(--wide);
+    grid-template-areas: var(--wide);
     pointer-events: none;
   }
 
-  #pad button {
+  /* The toolbar splits into the top corners, beside the server. */
+  #toolbar {
+    position: fixed;
+    top: max(16px, env(safe-area-inset-top));
+    left: max(16px, env(safe-area-inset-left));
+    right: max(16px, env(safe-area-inset-right));
+    margin: 0;
+    align-items: flex-start;
+    pointer-events: none;
+  }
+
+  .toolbar-layout {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #pad button,
+  #toolbar button {
     pointer-events: auto;
   }
 

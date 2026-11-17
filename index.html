@@ -77,6 +77,17 @@
       </section>
 
       <section id="arena" hidden>
+        <!-- Touch controls' settings, shown with the on-screen buttons: their arrangement, sound and pause. -->
+        <div id="toolbar" hidden>
+          <div class="toolbar-layout">
+            <span id="layouts-label">Control layout</span>
+            <div id="layouts" role="group" aria-labelledby="layouts-label"></div>
+          </div>
+          <div class="toolbar-end">
+            <button type="button" id="mute" aria-label="Mute" aria-pressed="false"><svg class="on" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v3H5zM7 1h1v5H7z"/></svg><svg class="off" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v1H5zM8 2h1v1H8zM6 3h2v2H6zM5 5h1v1H5zM8 5h1v1H8z"/></svg></button>
+            <button type="button" id="pause" aria-label="Pause"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><path d="M1 0h2v7H1zM4 0h2v7H4z"/></svg></button>
+          </div>
+        </div>
         <div class="stage">
           <div id="panels"></div>
           <div id="countdown" aria-live="assertive" hidden></div>
@@ -93,12 +104,6 @@
           <button type="button" data-action="right" aria-label="Right"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><g transform="rotate(180 3.5 3.5)"><path d="M3 0h1v1H3zM2 1h2v1H2zM1 2h6v1H1zM0 3h7v1H0zM1 4h6v1H1zM2 5h2v1H2zM3 6h1v1H3z"/></g></svg></button>
           <button type="button" data-action="down" aria-label="Drop faster"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><g transform="rotate(-90 3.5 3.5)"><path d="M3 0h1v1H3zM2 1h2v1H2zM1 2h6v1H1zM0 3h7v1H0zM1 4h6v1H1zM2 5h2v1H2zM3 6h1v1H3z"/></g></svg></button>
           <button type="button" data-action="turn" aria-label="Turn"><svg viewBox="0 0 9 9" aria-hidden="true" focusable="false"><path d="M3 0h3v1H3zM1 1h2v1H1zM6 1h2v1H6zM1 2h1v1H1zM6 2h3v1H6zM0 3h1v3H0zM7 3h1v1H7zM1 6h1v1H1zM7 6h1v1H7zM1 7h2v1H1zM6 7h2v1H6zM3 8h3v1H3z"/></svg></button>
-          <div class="pad-top">
-            <span id="layouts-label">LAYOUT</span>
-            <div id="layouts" role="group" aria-labelledby="layouts-label"></div>
-            <button type="button" id="mute" aria-label="Mute" aria-pressed="false"><svg class="on" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v3H5zM7 1h1v5H7z"/></svg><svg class="off" viewBox="0 0 9 7" aria-hidden="true" focusable="false"><path d="M0 2h2v3H0zM2 1h1v5H2zM3 0h1v7H3zM5 2h1v1H5zM8 2h1v1H8zM6 3h2v2H6zM5 5h1v1H5zM8 5h1v1H8z"/></svg></button>
-            <button type="button" id="pause" aria-label="Pause"><svg viewBox="0 0 7 7" aria-hidden="true" focusable="false"><path d="M1 0h2v7H1zM4 0h2v7H4z"/></svg></button>
-          </div>
         </div>
       </section>
     </main>
