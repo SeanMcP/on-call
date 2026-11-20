@@ -320,6 +320,7 @@ function endRound(winners) {
   let detail = '';
   let note = '';
   let again = 'Next round';
+  let next = null; // set when a solo win can move on to the next level
   if (players.length === 1) {
     const s = settings.players[players[0].slot];
     if (winners.length) {
@@ -334,9 +335,12 @@ function endRound(winners) {
       detail = `Fixed in ${formatTime(game.time)}.`;
       if (!record) detail += ` Record: ${formatTime(previous)}.`;
       if (s.level < MAX_LEVEL) {
-        s.level++;
-        saveSettings();
-        detail += `\nNext page: level ${s.level}, ${s.level * 4} bugs.`;
+        detail += `\nNext page: level ${s.level + 1}, ${(s.level + 1) * 4} bugs.`;
+        next = () => {
+          s.level++;
+          saveSettings();
+          startRound();
+        };
       } else {
         detail += '\nThat was the buggiest server there is. Legend.';
         again = 'Play again';
@@ -356,7 +360,10 @@ function endRound(winners) {
     again = 'Try again';
   }
   if (winners.length) audio.sfx(note ? 'record' : 'win');
-  showOverlay(title, detail, [[again, 'Enter', startRound], ['Settings', 'Esc', toMenu]], note);
+  const actions = next
+    ? [['Next level', 'Enter', next], ['Play again', 'P', startRound]]
+    : [[again, 'Enter', startRound]];
+  showOverlay(title, detail, [...actions, ['Settings', 'Esc', toMenu]], note);
 }
 
 function checkRound() {
@@ -375,6 +382,8 @@ function checkRound() {
   }
 }
 
+let overlayKeys = new Map(); // key label shown on an overlay button -> its action
+
 function showOverlay(title, detail, actions, note = '') {
   $('h2', overlayEl).textContent = title;
   $('.note', overlayEl).textContent = note;
@@ -382,6 +391,7 @@ function showOverlay(title, detail, actions, note = '') {
   $('.detail', overlayEl).textContent = detail;
   const box = $('.actions', overlayEl);
   box.innerHTML = '';
+  overlayKeys = new Map(actions.map(([, key, fn]) => [key, fn]));
   for (const [label, key, fn] of actions) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -548,9 +558,12 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (mode === 'paused' && e.code === 'Backspace') return toMenu();
-  if (mode === 'over' && e.code === 'Enter') {
-    e.preventDefault();
-    return startRound();
+  if (mode === 'over') {
+    const action = overlayKeys.get(e.code === 'Enter' ? 'Enter' : e.code === 'KeyP' ? 'P' : null);
+    if (action) {
+      e.preventDefault();
+      return action();
+    }
   }
   playKey(e, true);
 });
