@@ -102,6 +102,16 @@ test('four in a row clears, including bugs, and the round is won', () => {
   assert.ok(g.grid.every((c) => c === null));
 });
 
+test('blocks are never made only of eliminated colours', () => {
+  const g = blank();
+  put(g, 0, H - 1, bug(2)); // only colour 2 still has bugs
+  for (let i = 0; i < 200; i++) assert.ok(g.rollBlock().includes(2));
+  g.grid.fill(null);
+  put(g, 0, H - 1, bug(0));
+  put(g, 1, H - 1, bug(1)); // colour 2 eliminated: no [2, 2] blocks
+  for (let i = 0; i < 200; i++) assert.notDeepEqual(g.rollBlock(), [2, 2]);
+});
+
 test('the clock runs while the game is ticked and stops on the last bug', () => {
   const g = new Game({ level: 1 });
   assert.equal(g.time, 0);

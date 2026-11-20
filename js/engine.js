@@ -112,8 +112,20 @@ export class Game {
     return Math.max(base * 0.45, base * 0.97 ** Math.floor(this.blocks / 8));
   }
 
+  /** Colours that still have at least one bug in the well. */
+  liveColors() {
+    const live = new Set();
+    for (const c of this.grid) if (c && c.kind === 'bug') live.add(c.color);
+    return live;
+  }
+
+  /** A random block with at least one half in a colour that still has bugs. */
   rollBlock() {
-    return [Math.floor(this.rand() * COLORS), Math.floor(this.rand() * COLORS)];
+    const live = this.liveColors();
+    let colors;
+    do colors = [Math.floor(this.rand() * COLORS), Math.floor(this.rand() * COLORS)];
+    while (live.size > 0 && !colors.some((c) => live.has(c)));
+    return colors;
   }
 
   cell(x, y) {
