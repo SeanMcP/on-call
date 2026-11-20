@@ -239,14 +239,14 @@ function drawHud(ctx, game, pi, hud) {
     const color = ahead ? GREEN : DIM;
     if (textWidth(time) * 2 <= PW - x) drawText(ctx, time, x, 3, color, 2);
     else drawText(ctx, time, x, 5, color); // 10 minutes or more: too wide for big digits
-    drawText(ctx, `BEST ${hud.best == null ? '-:--.-' : formatTime(hud.best, 1)}`, x, 16, DIM);
+    drawText(ctx, `BEST ${hud.best == null ? '-:--.-' : formatTime(hud.best, 1)}`, x, 15, DIM);
   } else {
     drawText(ctx, `P${pi + 1}`, x, 3, PLAYER_COLORS[pi][0], 2);
     if (hud.wins > 0) drawText(ctx, `WON ${hud.wins}`, x + 20, 5, '#ffc857');
-    drawText(ctx, `TIME ${time}`, x, 16, won ? GREEN : DIM);
+    drawText(ctx, `TIME ${time}`, x, 15, won ? GREEN : DIM);
   }
-  drawText(ctx, `LV ${game.level}`, x, 23, DIM);
-  drawText(ctx, `BUGS ${String(game.bugs).padStart(2, '0')}`, x, 30, '#e8ecff');
+  drawText(ctx, `LV ${game.level}`, x, 22, DIM);
+  drawText(ctx, `BUGS ${String(game.bugs).padStart(2, '0')}`, x, 29, '#e8ecff');
 }
 
 function drawBanner(ctx, game, pi) {
