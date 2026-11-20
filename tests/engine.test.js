@@ -1,6 +1,6 @@
 // Run with: node tests/engine.test.js   (no dependencies)
 import assert from 'node:assert/strict';
-import { Game, W, H, MAX_LEVEL, BUGS_PER_LEVEL, CLEAR_MS, FALL_MS, makeRng } from '../js/engine.js';
+import { Game, W, H, MAX_LEVEL, BUGS_PER_LEVEL, CLEAR_MS, FALL_MS, makeRng, seedBugs } from '../js/engine.js';
 
 let passed = 0;
 function test(name, fn) {
@@ -44,6 +44,23 @@ test('seeding places 4 bugs per level with nothing pre-matched', () => {
       assert.equal(g.grid.filter((c) => c?.kind === 'bug').length, g.bugs);
       assert.equal(g.findMatches().size, 0);
       for (let i = 0; i < W * 4; i++) assert.equal(g.grid[i], null, 'top rows stay empty');
+    }
+  }
+});
+
+test('every seed of a level spreads its bugs evenly across the rows', () => {
+  for (let level = 1; level <= MAX_LEVEL; level++) {
+    for (let seed = 1; seed <= 50; seed++) {
+      const grid = new Array(W * H).fill(null);
+      assert.equal(seedBugs(grid, level, makeRng(seed)), level * BUGS_PER_LEVEL);
+      const perRow = [];
+      for (let y = 0; y < H; y++) {
+        const n = grid.slice(y * W, (y + 1) * W).filter(Boolean).length;
+        if (n) perRow.push(n);
+      }
+      const rows = H - Math.max(4, 10 - Math.ceil(level / 2));
+      const even = Math.floor((level * BUGS_PER_LEVEL) / rows);
+      assert.ok(perRow.every((n) => n >= even && n <= even + 1), `level ${level} seed ${seed}: ${perRow}`);
     }
   }
 });

@@ -54,24 +54,47 @@ function runLength(grid, x, y, color, dx, dy) {
   return n;
 }
 
-/** Scatter bugs into the lower part of the grid, never three of a colour in a line. */
+/** Place a bug at (x, y) in a colour that makes no line of three. Returns false if none fits. */
+function placeBug(grid, x, y, first) {
+  if (grid[y * W + x]) return false;
+  for (let k = 0; k < COLORS; k++) {
+    const color = (first + k) % COLORS;
+    if (runLength(grid, x, y, color, 1, 0) < 3 && runLength(grid, x, y, color, 0, 1) < 3) {
+      grid[y * W + x] = { color, kind: 'bug', link: null };
+      return true;
+    }
+  }
+  return false;
+}
+
+function shuffle(list, rand) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+/**
+ * Scatter bugs into the lower part of the grid, never three of a colour in a line.
+ * Bugs are dealt evenly across the rows so every seed of a level is about as tall and as dense.
+ */
 export function seedBugs(grid, level, rand) {
   const target = clamp(level, 1, MAX_LEVEL) * BUGS_PER_LEVEL;
   const minRow = Math.max(4, 10 - Math.ceil(level / 2));
+  const rows = shuffle(Array.from({ length: H - minRow }, (_, i) => minRow + i), rand);
+  const cols = Array.from({ length: W }, (_, i) => i);
   let placed = 0;
+  for (let i = 0; i < target; i++) {
+    const y = rows[i % rows.length];
+    const first = (placed + Math.floor(rand() * COLORS)) % COLORS;
+    if (shuffle(cols, rand).some((x) => placeBug(grid, x, y, first))) placed++;
+  }
+  // Any bug that found no room in its row goes anywhere in the band.
   for (let attempt = 0; placed < target && attempt < 20000; attempt++) {
     const x = Math.floor(rand() * W);
     const y = minRow + Math.floor(rand() * (H - minRow));
-    if (grid[y * W + x]) continue;
-    const first = (placed + Math.floor(rand() * COLORS)) % COLORS;
-    for (let k = 0; k < COLORS; k++) {
-      const color = (first + k) % COLORS;
-      if (runLength(grid, x, y, color, 1, 0) < 3 && runLength(grid, x, y, color, 0, 1) < 3) {
-        grid[y * W + x] = { color, kind: 'bug', link: null };
-        placed++;
-        break;
-      }
-    }
+    if (placeBug(grid, x, y, (placed + Math.floor(rand() * COLORS)) % COLORS)) placed++;
   }
   return placed;
 }
