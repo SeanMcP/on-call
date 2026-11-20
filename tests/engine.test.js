@@ -1,6 +1,6 @@
 // Run with: node tests/engine.test.js   (no dependencies)
 import assert from 'node:assert/strict';
-import { Game, W, H, MAX_LEVEL, BUGS_PER_LEVEL, CLEAR_MS, FALL_MS, makeRng, seedBugs } from '../js/engine.js';
+import { Game, W, H, MAX_LEVEL, BUGS_PER_LEVEL, CLEAR_MS, FALL_MS, makeRng, seedBugs, COLORS } from '../js/engine.js';
 
 let passed = 0;
 function test(name, fn) {
@@ -61,6 +61,17 @@ test('every seed of a level spreads its bugs evenly across the rows', () => {
       const rows = H - Math.max(4, 10 - Math.ceil(level / 2));
       const even = Math.floor((level * BUGS_PER_LEVEL) / rows);
       assert.ok(perRow.every((n) => n >= even && n <= even + 1), `level ${level} seed ${seed}: ${perRow}`);
+    }
+  }
+});
+
+test('every seed of every level has bugs of every colour', () => {
+  for (let level = 1; level <= MAX_LEVEL; level++) {
+    for (let seed = 1; seed <= 500; seed++) {
+      const grid = new Array(W * H).fill(null);
+      seedBugs(grid, level, makeRng(seed));
+      const colors = new Set(grid.filter(Boolean).map((c) => c.color));
+      assert.equal(colors.size, COLORS, `level ${level} seed ${seed}`);
     }
   }
 });

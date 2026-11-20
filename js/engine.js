@@ -77,24 +77,26 @@ function shuffle(list, rand) {
 
 /**
  * Scatter bugs into the lower part of the grid, never three of a colour in a line.
- * Bugs are dealt evenly across the rows so every seed of a level is about as tall and as dense.
+ * Bugs are dealt evenly across the rows so every seed of a level is about as tall and as dense,
+ * and colours come from a shuffled deck with equal counts of each, so every colour is always present.
+ * (The first bug of a colour can never make a line of three, so it always keeps its colour.)
  */
 export function seedBugs(grid, level, rand) {
   const target = clamp(level, 1, MAX_LEVEL) * BUGS_PER_LEVEL;
   const minRow = Math.max(4, 10 - Math.ceil(level / 2));
   const rows = shuffle(Array.from({ length: H - minRow }, (_, i) => minRow + i), rand);
   const cols = Array.from({ length: W }, (_, i) => i);
+  const deck = shuffle(Array.from({ length: target }, (_, i) => i % COLORS), rand);
   let placed = 0;
   for (let i = 0; i < target; i++) {
     const y = rows[i % rows.length];
-    const first = (placed + Math.floor(rand() * COLORS)) % COLORS;
-    if (shuffle(cols, rand).some((x) => placeBug(grid, x, y, first))) placed++;
+    if (shuffle(cols, rand).some((x) => placeBug(grid, x, y, deck[placed]))) placed++;
   }
   // Any bug that found no room in its row goes anywhere in the band.
   for (let attempt = 0; placed < target && attempt < 20000; attempt++) {
     const x = Math.floor(rand() * W);
     const y = minRow + Math.floor(rand() * (H - minRow));
-    if (placeBug(grid, x, y, (placed + Math.floor(rand() * COLORS)) % COLORS)) placed++;
+    if (placeBug(grid, x, y, deck[placed])) placed++;
   }
   return placed;
 }
