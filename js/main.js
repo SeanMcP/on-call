@@ -243,7 +243,7 @@ function menuKey(e) {
 
 let mode = 'menu'; // 'menu' | 'records' | 'countdown' | 'play' | 'paused' | 'over'
 let countdown = 0; // ms left before a round starts
-let players = []; // { slot, game, draw, held, das, wins }
+let players = []; // { slot, game, draw, held, das, best }
 let keyLookup = new Map();
 let wins = [0, 0, 0, 0];
 
@@ -275,6 +275,7 @@ function startRound() {
   for (const p of players) {
     const s = settings.players[p.slot];
     p.game = new Game({ level: s.level, speed: s.speed, blockSeed, bugSeed: (Math.random() * 2 ** 32) >>> 0 });
+    p.best = players.length === 1 ? records.get(s.level, s.speed) : null; // the record to beat, fixed for this round
     p.held = { left: false, right: false, down: false };
     p.das = { dir: 0, t: 0 };
   }
@@ -615,7 +616,7 @@ function frame(now) {
     slotsEl.querySelectorAll('.avatar').forEach((c, i) => drawAvatar(c, i, clock, isOn(i)));
   } else {
     const multi = players.length > 1;
-    for (const p of players) p.draw(p.game, clock, { wins: multi ? wins[p.slot] : 0 });
+    for (const p of players) p.draw(p.game, clock, { solo: !multi, best: p.best, wins: multi ? wins[p.slot] : 0 });
   }
   requestAnimationFrame(frame);
 }

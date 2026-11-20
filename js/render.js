@@ -222,14 +222,31 @@ function drawEngineer(ctx, game, pi, t) {
   }
 }
 
+const GREEN = '#49e07c';
+const DIM = '#8f9ac9';
+
+/**
+ * Solo: big TIME (green while under the record), BEST, LV, BUGS.
+ * Multiplayer: P#, TIME, LV, BUGS.
+ */
 function drawHud(ctx, game, pi, hud) {
-  const color = PLAYER_COLORS[pi][0];
   const x = 56;
-  drawText(ctx, `P${pi + 1}`, x, 3, color, 2);
-  if (hud.wins > 0) drawText(ctx, `WON ${hud.wins}`, x + 20, 5, '#ffc857');
-  drawText(ctx, `BUGS ${String(game.bugs).padStart(2, '0')}`, x, 16, '#e8ecff');
-  drawText(ctx, `TIME ${formatTime(game.time, 1)}`, x, 23, game.state === 'won' ? '#49e07c' : '#8f9ac9');
-  drawText(ctx, `LV ${game.level}`, x, 30, '#8f9ac9');
+  const won = game.state === 'won';
+  const time = formatTime(game.time, 1);
+  if (hud.solo) {
+    // Green while beating the record; a first clear is a record too, so it goes green on the win.
+    const ahead = hud.best == null ? won : game.time < hud.best;
+    const color = ahead ? GREEN : DIM;
+    if (textWidth(time) * 2 <= PW - x) drawText(ctx, time, x, 3, color, 2);
+    else drawText(ctx, time, x, 5, color); // 10 minutes or more: too wide for big digits
+    drawText(ctx, `BEST ${hud.best == null ? '-:--.-' : formatTime(hud.best, 1)}`, x, 16, DIM);
+  } else {
+    drawText(ctx, `P${pi + 1}`, x, 3, PLAYER_COLORS[pi][0], 2);
+    if (hud.wins > 0) drawText(ctx, `WON ${hud.wins}`, x + 20, 5, '#ffc857');
+    drawText(ctx, `TIME ${time}`, x, 16, won ? GREEN : DIM);
+  }
+  drawText(ctx, `LV ${game.level}`, x, 23, DIM);
+  drawText(ctx, `BUGS ${String(game.bugs).padStart(2, '0')}`, x, 30, '#e8ecff');
 }
 
 function drawBanner(ctx, game, pi) {
