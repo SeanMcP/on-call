@@ -86,6 +86,30 @@ test('same seed gives every player the same blocks', () => {
   );
 });
 
+test('blocks only use colours still in the server, bug or code', () => {
+  const g = blank();
+  put(g, 0, H - 1, bug(0));
+  put(g, 0, H - 2, code(2)); // 2 has no bugs, but its code is burying the last bug
+  for (let i = 0; i < 200; i++) {
+    const b = g.rollBlock();
+    assert.ok(b.every((c) => c === 0 || c === 2), `rolled ${b}`);
+  }
+  assert.ok(Array.from({ length: 200 }, () => g.rollBlock()).flat().includes(2));
+});
+
+test('a colour that has left the server is not brought back', () => {
+  const g = blank();
+  put(g, 0, H - 1, bug(1)); // nothing else left: every block is all colour 1
+  for (let i = 0; i < 50; i++) assert.deepEqual(g.rollBlock(), [1, 1]);
+});
+
+test('the block in mid-throw counts as in the server', () => {
+  const g = blank();
+  put(g, 0, H - 1, bug(0));
+  g.incoming = [1, 1];
+  assert.deepEqual(g.colorsInPlay(), [0, 1]);
+});
+
 test('piece moves, stops at walls, and wall-kicks when rotating', () => {
   const g = blank();
   while (g.move(-1));
@@ -128,16 +152,6 @@ test('four in a row clears, including bugs, and the round is won', () => {
   assert.equal(g.state, 'won');
   assert.equal(g.bugs, 0);
   assert.ok(g.grid.every((c) => c === null));
-});
-
-test('blocks are never made only of eliminated colours', () => {
-  const g = blank();
-  put(g, 0, H - 1, bug(2)); // only colour 2 still has bugs
-  for (let i = 0; i < 200; i++) assert.ok(g.rollBlock().includes(2));
-  g.grid.fill(null);
-  put(g, 0, H - 1, bug(0));
-  put(g, 1, H - 1, bug(1)); // colour 2 eliminated: no [2, 2] blocks
-  for (let i = 0; i < 200; i++) assert.notDeepEqual(g.rollBlock(), [2, 2]);
 });
 
 test('the clock runs while the game is ticked and stops on the last bug', () => {

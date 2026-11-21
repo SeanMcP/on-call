@@ -137,20 +137,22 @@ export class Game {
     return Math.max(base * 0.45, base * 0.97 ** Math.floor(this.blocks / 8));
   }
 
-  /** Colours that still have at least one bug in the well. */
-  liveColors() {
-    const live = new Set();
-    for (const c of this.grid) if (c && c.kind === 'bug') live.add(c.color);
-    return live;
+  /** Colours still in the server (bugs or code), counting the block in mid-throw. */
+  colorsInPlay() {
+    const seen = new Set(this.incoming ?? []);
+    for (const c of this.grid) if (c) seen.add(c.color);
+    return [...seen].sort();
   }
 
-  /** A random block with at least one half in a colour that still has bugs. */
+  /**
+   * A random block drawn only from colours still in the server: nobody throws
+   * code that isn't needed. Always takes exactly two draws, so players on the
+   * same seed stay in step whenever they have the same colours left.
+   */
   rollBlock() {
-    const live = this.liveColors();
-    let colors;
-    do colors = [Math.floor(this.rand() * COLORS), Math.floor(this.rand() * COLORS)];
-    while (live.size > 0 && !colors.some((c) => live.has(c)));
-    return colors;
+    const live = this.colorsInPlay();
+    const pool = live.length ? live : [...Array(COLORS).keys()];
+    return [pool[Math.floor(this.rand() * pool.length)], pool[Math.floor(this.rand() * pool.length)]];
   }
 
   cell(x, y) {
